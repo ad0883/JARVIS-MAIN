@@ -16,7 +16,7 @@ count = 0  # Initializing sample face count
 while True:
     ret, img = cam.read()
     if not ret:
-        print("Failed to capture image. Exiting...")
+        print("Failed to capture image. Exiting.....")
         break
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Convert image to grayscale
