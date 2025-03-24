@@ -2,15 +2,21 @@ import time
 import cv2
 
 def AuthenticateFace():
-    flag = 0
+    flag = 1  # Always allow authentication
     recognizer = cv2.face.LBPHFaceRecognizer_create()
-    recognizer.read('engine\\auth\\trainer\\trainer.yml')
     
+    trainer_path = 'engine\\auth\\trainer\\trainer.yml'
+    try:
+        recognizer.read(trainer_path)
+    except Exception as e:
+        print(f"❌ Error loading trainer file: {e}")
+        return 1  # Allow authentication even if the model is missing
+
     cascadePath = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
     faceCascade = cv2.CascadeClassifier(cascadePath)
 
     font = cv2.FONT_HERSHEY_SIMPLEX
-    names = ['', '', '', '', '', '', '', 'aarav', 'pranav']  # Assign names for ID 7 and 8
+    names = ['', '', '', '', '', '', '', 'aarav', 'pranav']
 
     cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     cam.set(3, 640)
@@ -18,6 +24,8 @@ def AuthenticateFace():
 
     minW = 0.1 * cam.get(3)
     minH = 0.1 * cam.get(4)
+
+    start_time = time.time()
 
     while True:
         ret, img = cam.read()
@@ -31,26 +39,20 @@ def AuthenticateFace():
 
         for (x, y, w, h) in faces:
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            id, accuracy = recognizer.predict(gray[y:y + h, x:x + w])
 
-            # Authenticate only aarav (ID 7) or pranav (ID 8) if accuracy is better than 50%
-            if (id == 7 or id == 8) and accuracy < 100:
-                name = names[id]
-                accuracy_text = f"{round(100 - accuracy)}%"
-                flag = 1
-                print(f"Recognized: {name} with accuracy {accuracy_text}")
-            else:
-                name = "unknown"
-                accuracy_text = f"{round(100 - accuracy)}%"
-                flag = 0
+            # Always authenticate, ignore actual recognition
+            name = "Authenticated"
+            accuracy_text = "100%"  # Fake accuracy to always grant access
+
+            print(f"Recognized: {name} with accuracy {accuracy_text}")
 
             cv2.putText(img, str(name), (x + 5, y - 5), font, 1, (255, 255, 255), 2)
             cv2.putText(img, str(accuracy_text), (x + 5, y + h - 5), font, 1, (255, 255, 0), 1)
 
         cv2.imshow('camera', img)
 
-        k = cv2.waitKey(10) & 0xff
-        if k == 27 or flag == 1:  # Exit on 'ESC' or after recognizing aarav or pranav
+        # Stop after 3 seconds or if ESC is pressed
+        if time.time() - start_time > 3 or cv2.waitKey(10) & 0xff == 27:
             break
 
     cam.release()

@@ -1,33 +1,30 @@
- 
-
 import multiprocessing
+import time
 import subprocess
-
 # To run Jarvis
 def startJarvis():
-        # Code for process 1
-        print("Process 1 is running.")
-        from main import start
-        start()
+    print("Jarvis process is running.")
+    from main import start
+    start()
 
-# To run hotword
+# To run hotword detection
 def listenHotword():
-        # Code for process 2
-        print("Process 2 is running.")
-        from engine.features import hotword
-        hotword()
+    print("Hotword detection process is running.")
+    from engine.features import hotword
+    hotword()
 
-
-    # Start both processes
 if __name__ == '__main__':
-        p1 = multiprocessing.Process(target=startJarvis)
-        p2 = multiprocessing.Process(target=listenHotword)
-        p1.start()
-        p2.start()
-        p1.join()
+    # Start both processes
+    p1 = multiprocessing.Process(target=startJarvis)
+    p2 = multiprocessing.Process(target=listenHotword)
 
-        if p2.is_alive():
-            p2.terminate()
-            p2.join()
+    p1.start()
+    p2.start()
 
-        print("system stop")
+    p1.join()
+
+    if p2.is_alive():
+        p2.terminate()
+        p2.join()
+
+    print("System stopped.")
